@@ -32,19 +32,6 @@ function BackgroundDecorations() {
   );
 }
 
-function StatusBadges() {
-  return (
-    <div className="flex items-center justify-center gap-3">
-      <div className="px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 rounded-full text-xs font-semibold border border-blue-200/50">
-        {UI_CONFIG.version}
-      </div>
-      <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-green-100 to-emerald-100 rounded-full border border-green-200/50">
-        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-sm"></div>
-        <span className="text-xs text-green-700 font-semibold">ONLINE</span>
-      </div>
-    </div>
-  );
-}
 
 interface FormFieldProps {
   id: string;
@@ -227,7 +214,7 @@ export default function GeneratorClient({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-blue-50/50 to-indigo-100/50 relative overflow-hidden pb-16">
+    <div className="bg-gradient-to-br from-purple-50/50 via-blue-50/50 to-indigo-100/50 relative overflow-hidden pb-16">
       <BackgroundDecorations />
 
       <div className="relative z-10 container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
@@ -250,7 +237,6 @@ export default function GeneratorClient({
                   <div className="bg-gradient-to-r from-purple-800 via-blue-700 to-indigo-700 bg-clip-text text-transparent font-bold leading-tight mb-3">
                     {UI_CONFIG.title}
                   </div>
-                  <StatusBadges />
                 </div>
               </CardTitle>
               <CardDescription className="text-base sm:text-lg text-gray-600 mt-4 font-medium text-center">

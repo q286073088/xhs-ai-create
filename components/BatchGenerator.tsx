@@ -235,49 +235,9 @@ export default function BatchGenerator({
             </>
           )}
         </Button>
-
-        <Button
-          onClick={() => window.location.href = '/history'}
-          variant="outline"
-          disabled={isGenerating}
-          className="px-6 py-3 border-gray-300 hover:border-purple-400 hover:bg-purple-50 transition-all duration-300"
-        >
-          查看历史
-        </Button>
       </div>
 
-      {/* 提示信息 */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="flex items-start gap-3 p-3 bg-purple-50/50 rounded-lg">
-          <div className="w-8 h-8 bg-purple-200 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Zap className="w-4 h-4 text-purple-700" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-purple-800">后台处理</p>
-            <p className="text-xs text-purple-600">任务在后台运行，可关闭页面</p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-3 p-3 bg-blue-50/50 rounded-lg">
-          <div className="w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-blue-700">✨</span>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-blue-800">AI改进</p>
-            <p className="text-xs text-blue-600">自动优化内容，提升质量</p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-3 p-3 bg-green-50/50 rounded-lg">
-          <div className="w-8 h-8 bg-green-200 rounded-lg flex items-center justify-center flex-shrink-0">
-            <CheckCircle className="w-4 h-4 text-green-700" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-green-800">自动保存</p>
-            <p className="text-xs text-green-600">生成记录自动保存管理</p>
-          </div>
-        </div>
-      </div>
+     
     </div>
   )
 }

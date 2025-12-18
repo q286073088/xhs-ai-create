@@ -86,7 +86,7 @@ export default function Home() {
           href="/history"
           className="inline-flex items-center px-4 py-2 bg-white/90 backdrop-blur-sm border border-purple-200/50 rounded-lg hover:bg-purple-50 transition-all duration-300 shadow-lg hover:shadow-xl"
         >
-          📚 查看历史记录
+          查看历史记录
         </a>
       </div>
 
@@ -111,36 +111,26 @@ export default function Home() {
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-800 via-blue-600 to-indigo-700 bg-clip-text text-transparent leading-tight">
               小红书爆款文案生成器
             </h1>
-            <p className="text-xl sm:text-2xl text-slate-700 mb-8 max-w-3xl mx-auto leading-relaxed">
-              🤖 深度分析热门笔记特征 · ⚡ 智能生成个性化内容 · 🎯 让每篇文案都成为爆款
-            </p>
+        
 
             {/* 特性展示 */}
             <div className="flex justify-center gap-4 sm:gap-6 flex-wrap mb-8">
               <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-purple-200/50 shadow-md">
-                <span className="text-purple-600">🔥</span>
                 <span className="text-sm font-medium text-purple-800">爆款分析</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-blue-200/50 shadow-md">
-                <span className="text-blue-600">⚡</span>
                 <span className="text-sm font-medium text-blue-800">实时生成</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-indigo-200/50 shadow-md">
-                <span className="text-indigo-600">🎯</span>
                 <span className="text-sm font-medium text-indigo-800">精准定制</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-pink-200/50 shadow-md">
-                <span className="text-pink-600">📈</span>
                 <span className="text-sm font-medium text-pink-800">流量提升</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-green-200/50 shadow-md">
-                <span className="text-green-600">🚀</span>
                 <span className="text-sm font-medium text-green-800">批量生成</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-orange-200/50 shadow-md">
-                <span className="text-orange-600">⚡</span>
-                <span className="text-sm font-medium text-orange-800">AI改进</span>
-              </div>
+           
             </div>
 
             {/* 导航标签 */}
