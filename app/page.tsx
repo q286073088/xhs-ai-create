@@ -16,13 +16,20 @@ export default function Home() {
   const [xhsCookie, setXhsCookie] = useState('')
   const { toasts, addToast, removeToast, info } = useToast()
 
-  // 从localStorage加载设置
+  // 表单数据持久化状态
+  const [singleFormData, setSingleFormData] = useState({ keyword: '', userInfo: '' })
+  const [batchFormData, setBatchFormData] = useState([
+    { id: '1', keyword: '', userInfo: '' }
+  ])
+
+  // 从localStorage加载设置和表单数据
   useEffect(() => {
     const savedImprovement = localStorage.getItem('enableImprovement')
     const savedModel = localStorage.getItem('aiModel')
     const savedScraping = localStorage.getItem('enableScraping')
     const savedCookie = localStorage.getItem('xhsCookie')
 
+    // 加载设置
     if (savedImprovement !== null) {
       setEnableImprovement(JSON.parse(savedImprovement))
     }
@@ -34,6 +41,26 @@ export default function Home() {
     }
     if (savedCookie) {
       setXhsCookie(savedCookie)
+    }
+
+    // 加载表单数据
+    const savedSingleData = localStorage.getItem('singleFormData')
+    const savedBatchData = localStorage.getItem('batchFormData')
+
+    if (savedSingleData) {
+      try {
+        setSingleFormData(JSON.parse(savedSingleData))
+      } catch (e) {
+        console.warn('Failed to load single form data')
+      }
+    }
+
+    if (savedBatchData) {
+      try {
+        setBatchFormData(JSON.parse(savedBatchData))
+      } catch (e) {
+        console.warn('Failed to load batch form data')
+      }
     }
   }, [])
 
@@ -64,6 +91,17 @@ export default function Home() {
       localStorage.removeItem('xhsCookie')
       info('Cookie已清除')
     }
+  }
+
+  // 保存表单数据到localStorage
+  const saveSingleFormData = (data: { keyword: string; userInfo: string }) => {
+    setSingleFormData(data)
+    localStorage.setItem('singleFormData', JSON.stringify(data))
+  }
+
+  const saveBatchFormData = (data: Array<{ id: string; keyword: string; userInfo: string }>) => {
+    setBatchFormData(data)
+    localStorage.setItem('batchFormData', JSON.stringify(data))
   }
 
   return (
@@ -168,6 +206,8 @@ export default function Home() {
               aiModel={aiModel}
               enableScraping={enableScraping}
               onShowToast={info}
+              initialFormData={singleFormData}
+              onSaveFormData={saveSingleFormData}
             />
           ) : (
             <BatchGenerator
@@ -175,6 +215,8 @@ export default function Home() {
               aiModel={aiModel}
               enableScraping={enableScraping}
               onShowToast={info}
+              initialFormData={batchFormData}
+              onSaveFormData={saveBatchFormData}
             />
           )}
       </div>

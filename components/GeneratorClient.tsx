@@ -133,26 +133,31 @@ interface GeneratorClientProps {
   aiModel?: string;
   enableScraping?: boolean;
   onShowToast?: (message: string) => void;
+  initialFormData?: { keyword: string; userInfo: string };
+  onSaveFormData?: (data: { keyword: string; userInfo: string }) => void;
 }
 
 export default function GeneratorClient({
   enableImprovement,
   aiModel,
   enableScraping,
-  onShowToast
+  onShowToast,
+  initialFormData,
+  onSaveFormData
 }: GeneratorClientProps) {
   const router = useRouter();
-  const [formData, setFormData] = useState<FormData>({
-    keyword: '',
-    userInfo: ''
-  });
+  const [formData, setFormData] = useState<FormData>(
+    initialFormData || { keyword: '', userInfo: '' }
+  );
   const [error, setError] = useState<ErrorState | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const { isValid, validateAndGetError } = useFormValidation(formData);
 
   const updateFormField = (field: keyof FormData) => (value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    const newFormData = { ...formData, [field]: value };
+    setFormData(newFormData);
+    onSaveFormData?.(newFormData);
     if (error) setError(null); // Clear error when user starts typing
   };
 
