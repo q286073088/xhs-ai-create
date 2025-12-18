@@ -125,6 +125,14 @@ npm run lint
 
 **注意**：当前项目没有配置测试脚本。如需添加测试，建议使用 Jest + React Testing Library。
 
+## 测试工具
+
+项目包含一些调试和测试工具：
+
+- **`public/test-count.html`** - 测试小红书数据获取数量的调试工具
+- **`public/test-flow.html`** - API接口测试页面，用于调试分析接口和生成接口
+- **`test-optimization.md`** - 优化测试文档，记录了v2.2版本的优化内容和测试计划
+
 ## 环境变量配置
 
 必需配置（复制 `.env.example` 为 `.env.local`）：
@@ -637,3 +645,5 @@ npm start
 - API 路由使用 Next.js 14 App Router 约定
 - 错误处理统一使用 `BusinessError` 类
 - 日志输出使用表情符号前缀增强可读性（🔍 🚨 ✅ ⚠️）
+
+# 不要运行命令测试，由人来测试。

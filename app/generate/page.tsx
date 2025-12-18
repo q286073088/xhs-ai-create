@@ -263,9 +263,15 @@ function GeneratePageContent() {
   const startGeneration = async () => {
     const keyword = searchParams.get('keyword');
     const userInfo = searchParams.get('userInfo');
-    
+
+    // 添加详细的参数检查和日志
+    console.log('🔍 开始生成，参数检查:');
+    console.log('keyword:', keyword);
+    console.log('userInfo:', userInfo);
+
     if (!keyword || !userInfo) {
-      setError('缺少必要的参数');
+      console.error('❌ 缺少必要参数:', { keyword, userInfo });
+      setError('缺少必要的参数：需要提供主题和素材内容');
       setLoading(false);
       return;
     }
@@ -291,16 +297,25 @@ function GeneratePageContent() {
       
       try {
         setLoadingStage('analyzing-trends');
-        
+
+        // 再次验证参数，确保不会发送空请求体
+        if (!keyword?.trim() || !userInfo?.trim()) {
+          throw new Error('参数验证失败：主题或素材内容为空');
+        }
+
+        const requestBody = {
+          user_info: userInfo.trim(),
+          keyword: keyword.trim(),
+        };
+
+        console.log('📤 发送请求体:', JSON.stringify(requestBody, null, 2));
+
         const streamResponse = await fetch('/api/generate-combined', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            user_info: userInfo,
-            keyword,
-          }),
+          body: JSON.stringify(requestBody),
           signal: currentController.signal,
         });
 
@@ -407,34 +422,20 @@ function GeneratePageContent() {
           setHasGenerated(true);
           return;
         }
-        
+
         // 获取新的参数（keyword和userInfo）
         const keyword = searchParams.get('keyword');
         const userInfo = searchParams.get('userInfo');
-        
+
         if (!keyword || !userInfo) {
           setError('缺少必要的参数');
           setLoading(false);
           return;
         }
-        
-        // 检查是否是页面刷新的情况
-        const sessionKey = `generated_${keyword}_${userInfo}`;
-        const hasGeneratedInSession = sessionStorage.getItem(sessionKey);
-        
-        if (hasGeneratedInSession && !hasGenerated) {
-          // 页面刷新的情况，显示重新生成提示
-          setLoading(false);
-          setShowRegeneratePrompt(true);
-          return;
-        }
-        
-        // 如果还没有生成过，开始生成
-        if (!hasGenerated) {
-          // 标记这个会话已经生成过
-          sessionStorage.setItem(sessionKey, 'true');
-          await startGeneration();
-        }
+
+        // 直接开始生成，不检查页面刷新状态
+        // 这样可以避免第一次生成失败的问题
+        await startGeneration();
       } catch (err) {
         console.error('初始化失败:', err);
         setError('初始化失败');
@@ -443,7 +444,7 @@ function GeneratePageContent() {
     };
 
     checkAndStart();
-  }, [searchParams, parseContent, hasGenerated]);
+  }, [searchParams]);
   
   // 清理函数
   useEffect(() => {
@@ -457,62 +458,8 @@ function GeneratePageContent() {
   }, []);
 
 
-  if (showRegeneratePrompt) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden">
-        {/* 背景装饰元素 */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-32 -right-32 w-64 h-64 bg-gradient-to-br from-blue-200/15 to-indigo-200/15 rounded-full blur-3xl animate-float" style={{animationDelay: '0s'}}></div>
-          <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-gradient-to-tr from-indigo-200/15 to-purple-200/15 rounded-full blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
-        </div>
-        
-        <div className="relative z-10 flex items-center justify-center min-h-screen">
-          <Card className="glass-card shadow-2xl animate-scale-in bg-gradient-to-br from-blue-50/90 via-indigo-50/80 to-slate-50/90 backdrop-blur-md border border-blue-200/30 max-w-md mx-4">
-            <CardContent className="text-center py-12 px-6 relative overflow-hidden">
-              <div className="inline-flex items-center justify-center w-20 h-20 mb-6 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full shadow-2xl">
-                <span className="text-3xl">🔄</span>
-              </div>
-              
-              <div className="space-y-4 mb-8">
-                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  检测到页面刷新
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  页面已刷新，之前可能已经生成过内容。你是否要重新生成新的内容？
-                </p>
-              </div>
-              
-              <div className="flex flex-col gap-3">
-                <Button
-                  onClick={async () => {
-                    setShowRegeneratePrompt(false);
-                    await startGeneration();
-                  }}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all duration-300"
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="text-lg">✨</span>
-                    重新生成内容
-                  </span>
-                </Button>
-                
-                <Button
-                  onClick={() => router.push('/')}
-                  variant="outline"
-                  className="w-full border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-300"
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <ArrowLeft size={16} />
-                    返回首页
-                  </span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  // 移除页面刷新提示，直接生成内容
+  // 这样可以避免用户困惑和第一次生成失败的问题
 
   if (loading) {
     // 定义加载阶段的信息
@@ -622,7 +569,7 @@ function GeneratePageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 relative overflow-hidden">
       {/* 背景装饰元素 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -right-32 w-64 h-64 bg-gradient-to-br from-blue-200/15 to-indigo-200/15 rounded-full blur-3xl animate-float" style={{animationDelay: '0s'}}></div>

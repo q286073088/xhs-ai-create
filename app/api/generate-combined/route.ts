@@ -13,7 +13,7 @@ import { BusinessError } from '@/lib/error-handler';
 const debugLoggingEnabled = process.env.ENABLE_DEBUG_LOGGING === 'true';
 
 // 智能数据获取函数 - 优先使用缓存，失败时降级到备用缓存
-async function fetchHotPostsWithCache(keyword: string): Promise<string | null> {
+export async function fetchHotPostsWithCache(keyword: string): Promise<string | null> {
   const scrapingEnabled = process.env.ENABLE_SCRAPING !== 'false';
 
   // 如果爬取功能被禁用，直接返回 null，不使用任何缓存
@@ -332,7 +332,28 @@ function createPromptWithoutReference(user_info: string, keyword: string): strin
 
 export async function POST(request: Request) {
   try {
-    const { keyword, user_info } = await request.json();
+    // 添加更详细的错误处理来捕获 JSON 解析错误
+    let requestBody;
+    try {
+      const text = await request.text();
+      if (debugLoggingEnabled) {
+        console.log('🔍 原始请求体长度:', text.length);
+        console.log('🔍 原始请求体前200字符:', text.substring(0, 200));
+      }
+
+      if (!text.trim()) {
+        return new Response('请求体为空', { status: HTTP_STATUS.BAD_REQUEST });
+      }
+
+      requestBody = JSON.parse(text);
+    } catch (parseError) {
+      console.error('JSON 解析失败:', parseError);
+      return new Response(`无效的 JSON 格式: ${parseError instanceof Error ? parseError.message : '未知错误'}`, {
+        status: HTTP_STATUS.BAD_REQUEST
+      });
+    }
+
+    const { keyword, user_info } = requestBody;
 
     if (!user_info || !keyword) {
       return new Response(ERROR_MESSAGES.MISSING_REQUIRED_PARAMS, { status: HTTP_STATUS.BAD_REQUEST });
@@ -366,70 +387,121 @@ export async function POST(request: Request) {
         let contentStarted = false;
         const startMarker = "## 1."; // 从第1部分开始，现在直接是标题创作
         let accumulatedContent = ""; // 累积内容，用于检测开始标记
+        let isControllerClosed = false;
 
-        // 使用AI管理器的流式生成（带重试机制）
-        await aiManager.generateStreamWithRetry(
-          combinedPrompt,
-          // onChunk: 处理每个内容块
-          (content: string) => {
-            // 第一步：净化文本，移除潜在的零宽字符等水印
-            let cleanContent = sanitizeText(content);
-
-            // 后续所有操作都使用净化后的 cleanContent
-            accumulatedContent += cleanContent;
-            let chunkToSend = cleanContent;
-
-            // 如果内容尚未开始，检查当前累积内容是否包含开始标记
-            if (!contentStarted) {
-              const startIndex = accumulatedContent.indexOf(startMarker);
-              if (startIndex !== -1) {
-                // 找到了开始标记，说明正式内容开始了
-                contentStarted = true;
-                // 计算在当前chunk中的相对位置
-                const chunkStartIndex = startIndex - (accumulatedContent.length - content.length);
-                if (chunkStartIndex >= 0) {
-                  // 开始标记在当前chunk中，只发送从标记开始的部分
-                  chunkToSend = content.substring(chunkStartIndex);
-                } else {
-                  // 开始标记在之前的chunk中，发送完整的当前chunk
-                  chunkToSend = content;
-                }
-
-                console.log('🎯 检测到内容开始标记，开始发送内容');
+        // 安全的控制器包装函数
+        const safeEnqueue = (data: Uint8Array) => {
+          if (!isControllerClosed) {
+            try {
+              controller.enqueue(data);
+            } catch (error) {
+              if (error instanceof Error && error.message.includes('Controller is already closed')) {
+                isControllerClosed = true;
+                console.warn('⚠️ 控制器已关闭，停止发送数据');
               } else {
-                // 没找到开始标记，且内容未开始，忽略这个块
-                console.log('⏭️ 跳过前置内容:', content.substring(0, 50) + '...');
+                console.error('❌ 控制器入队失败:', error);
+              }
+            }
+          }
+        };
+
+        const safeClose = () => {
+          if (!isControllerClosed) {
+            try {
+              controller.close();
+              isControllerClosed = true;
+            } catch (error) {
+              console.error('❌ 控制器关闭失败:', error);
+            }
+          }
+        };
+
+        try {
+          // 使用AI管理器的流式生成（带重试机制）
+          await aiManager.generateStreamWithRetry(
+            combinedPrompt,
+            // onChunk: 处理每个内容块
+            (content: string) => {
+              // 检查控制器是否已关闭
+              if (isControllerClosed) {
                 return;
               }
-            }
 
-            // 敏感词过滤处理
-            if (contentStarted && chunkToSend) {
-              // 1. 先检测敏感词
-              const detection = detectSensitiveWords(chunkToSend);
+              try {
+                // 第一步：净化文本，移除潜在的零宽字符等水印
+                let cleanContent = sanitizeText(content);
 
-              // 2. 如果检测到，只打印一次简洁的日志
-              if (detection.hasSensitiveWords) {
-                console.warn(`🚨 在当前数据块中检测到敏感词: [${detection.detectedWords.join(', ')}]，已自动处理。`);
-                // 3. 然后进行过滤
-                chunkToSend = filterSensitiveContent(chunkToSend, 'replace');
+                // 后续所有操作都使用净化后的 cleanContent
+                accumulatedContent += cleanContent;
+                let chunkToSend = cleanContent;
+
+                // 如果内容尚未开始，检查当前累积内容是否包含开始标记
+                if (!contentStarted) {
+                  const startIndex = accumulatedContent.indexOf(startMarker);
+                  if (startIndex !== -1) {
+                    // 找到了开始标记，说明正式内容开始了
+                    contentStarted = true;
+                    // 计算在当前chunk中的相对位置
+                    const chunkStartIndex = startIndex - (accumulatedContent.length - content.length);
+                    if (chunkStartIndex >= 0) {
+                      // 开始标记在当前chunk中，只发送从标记开始的部分
+                      chunkToSend = content.substring(chunkStartIndex);
+                    } else {
+                      // 开始标记在之前的chunk中，发送完整的当前chunk
+                      chunkToSend = content;
+                    }
+
+                    console.log('🎯 检测到内容开始标记，开始发送内容');
+                  } else {
+                    // 没找到开始标记，且内容未开始，忽略这个块
+                    console.log('⏭️ 跳过前置内容:', content.substring(0, 50) + '...');
+                    return;
+                  }
+                }
+
+                // 敏感词过滤处理
+                if (contentStarted && chunkToSend) {
+                  // 1. 先检测敏感词
+                  const detection = detectSensitiveWords(chunkToSend);
+
+                  // 2. 如果检测到，只打印一次简洁的日志
+                  if (detection.hasSensitiveWords) {
+                    console.warn(`🚨 在当前数据块中检测到敏感词: [${detection.detectedWords.join(', ')}]，已自动处理。`);
+                    // 3. 然后进行过滤
+                    chunkToSend = filterSensitiveContent(chunkToSend, 'replace');
+                  }
+
+                  // 4. 发送处理后的内容
+                  safeEnqueue(encoder.encode(`data: ${JSON.stringify({ content: chunkToSend })}\n\n`));
+                }
+              } catch (chunkError) {
+                console.error('❌ 处理内容块时出错:', chunkError);
+                // 继续处理下一个块，不中断整个流
               }
-
-              // 4. 发送处理后的内容
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: chunkToSend })}\n\n`));
+            },
+            // onError: 处理错误
+            (error: Error) => {
+              console.error('Stream error:', error);
+              if (!isControllerClosed) {
+                safeEnqueue(encoder.encode(`data: ${JSON.stringify({ error: error.message })}\n\n`));
+              }
+              safeClose();
             }
-          },
-          // onError: 处理错误
-          (error: Error) => {
-            console.error('Stream error:', error);
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: error.message })}\n\n`));
-            controller.close();
-          }
-        );
+          );
 
-        // 生成完成
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-        controller.close();
+          // 生成完成
+          if (!isControllerClosed) {
+            safeEnqueue(encoder.encode('data: [DONE]\n\n'));
+            safeClose();
+          }
+        } catch (error) {
+          console.error('❌ 流式生成过程中发生错误:', error);
+          if (!isControllerClosed) {
+            const errorMessage = error instanceof Error ? error.message : '未知错误';
+            safeEnqueue(encoder.encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`));
+            safeClose();
+          }
+        }
       }
     });
 

@@ -2,26 +2,32 @@ import { Card, CardContent } from '@/components/ui/card'
 
 export default function AuthorCard() {
   return (
-    <Card className="bg-gradient-to-r from-red-50 to-pink-50 border-red-200">
+    <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
       <CardContent className="py-6">
         <div className="flex flex-col items-center gap-4">
           <div className="text-lg font-semibold text-gray-800">
-            💡 喜欢这个工具吗？
+            ✨ AI文案创作助手
           </div>
-          <p className="text-gray-600 max-w-2xl">
-            这个AI工具由小红书博主精心打造，专注于帮助大家创作更优质的内容。
-            如果觉得有用，欢迎关注我的小红书，获取更多爆款创作技巧！
+          <p className="text-gray-600 max-w-2xl text-center">
+            基于深度学习技术，智能分析小红书热门笔记特征，
+            为您创作更自然、更有吸引力的爆款文案内容。
           </p>
-          <a
-            href="https://www.xiaohongshu.com/user/profile/5e141963000000000100158e"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-          >
-            📱 关注作者小红书，获取更多干货
-          </a>
-          <p className="text-sm text-gray-500">
-            分享小红书运营技巧 • AI工具使用心得 • 爆款文案解析
+          <div className="flex flex-wrap gap-3 justify-center">
+            <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+              🤖 AI智能分析
+            </span>
+            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+              📝 爆款文案生成
+            </span>
+            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+              🎯 个性化定制
+            </span>
+            <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+              ⚡ 实时生成
+            </span>
+          </div>
+          <p className="text-sm text-gray-500 text-center">
+            让每个文字都充满生命力 • 提升内容创作效率 • 助力流量增长
           </p>
         </div>
       </CardContent>

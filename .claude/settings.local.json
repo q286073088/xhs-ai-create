@@ -6,7 +6,8 @@
       "Bash(taskkill:*)",
       "Bash(git add:*)",
       "Bash(npm run lint)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(curl -X POST http://localhost:3003/api/generate-combined -H \"Content-Type: application/json\" -d '{\"\"keyword\"\": \"\"测试\"\", \"\"user_info\"\": \"\"测试用户\"\"}' -v)"
     ],
     "deny": [],
     "ask": []

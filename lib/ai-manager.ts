@@ -45,8 +45,9 @@ export class AIManager {
   /**
    * 解析模型列表，支持多模型降级
    */
-  private getModelList(): string[] {
-    const modelNames = getEnvVar('AI_MODEL_NAME', CONFIG.DEFAULT_AI_MODEL);
+  private getModelList(dynamicModelName?: string): string[] {
+    // 如果提供了动态模型名称，使用它；否则使用环境变量
+    const modelNames = dynamicModelName || getEnvVar('AI_MODEL_NAME', CONFIG.DEFAULT_AI_MODEL);
     return modelNames.split(',').map(name => name.trim()).filter(name => name.length > 0);
   }
 
@@ -275,9 +276,10 @@ export class AIManager {
    */
   async analyzeWithRetry(
     prompt: string,
-    expectedFields: string[] = ['titleFormulas', 'contentStructure', 'tagStrategy', 'coverStyleAnalysis']
+    expectedFields: string[] = ['titleFormulas', 'contentStructure', 'tagStrategy', 'coverStyleAnalysis'],
+    dynamicModelName?: string
   ): Promise<any> {
-    const modelList = this.getModelList();
+    const modelList = this.getModelList(dynamicModelName);
     let lastError: Error | null = null;
 
     // 遍历所有可用模型
@@ -392,9 +394,10 @@ export class AIManager {
   async generateStreamWithRetry(
     prompt: string,
     onChunk: (content: string) => void,
-    onError: (error: Error) => void
+    onError: (error: Error) => void,
+    dynamicModelName?: string
   ): Promise<void> {
-    const modelList = this.getModelList();
+    const modelList = this.getModelList(dynamicModelName);
     let lastError: Error | null = null;
 
     // 遍历所有可用模型
@@ -403,60 +406,95 @@ export class AIManager {
 
       // 对每个模型进行重试
       for (let attempt = 0; attempt <= this.retryConfig.maxRetries; attempt++) {
+        let response: any = null;
         try {
           if (debugLoggingEnabled) {
             console.log(`🤖 流式生成尝试 ${attempt + 1}/${this.retryConfig.maxRetries + 1} (模型: ${currentModel})`);
           }
 
           const client = this.getClient();
-          const response = await client.chat.completions.create({
+          response = await client.chat.completions.create({
             model: currentModel,
             messages: [{ role: "user", content: prompt }],
             stream: true,
             temperature: CONFIG.TEMPERATURE,
           });
 
-        let hasContent = false;
-        let lastChunkTime = Date.now();
+          let hasContent = false;
+          let lastChunkTime = Date.now();
 
-        for await (const chunk of response) {
-          // [核心修复] 增加对 chunk.choices 的有效性检查
-          if (!chunk || !chunk.choices || chunk.choices.length === 0) {
+          try {
+            for await (const chunk of response) {
+              // 检查流是否被外部关闭
+              try {
+                // [核心修复] 增加对 chunk.choices 的有效性检查
+                if (!chunk || !chunk.choices || chunk.choices.length === 0) {
+                  if (debugLoggingEnabled) {
+                    console.log('🔄 流式响应心跳块，跳过');
+                  }
+                  continue;
+                }
+
+                const content = chunk.choices[0]?.delta?.content || '';
+                if (content) {
+                  hasContent = true;
+                  lastChunkTime = Date.now();
+
+                  // 捕获 onChunk 回调中的错误，避免影响流处理
+                  try {
+                    onChunk(content);
+                  } catch (callbackError) {
+                    console.error('❌ onChunk 回调执行失败:', callbackError);
+                    // 继续处理下一个块，不中断整个流
+                  }
+                } else {
+                  // 心跳机制：如果超过500ms没有内容，发送一个空的心跳
+                  const now = Date.now();
+                  if (now - lastChunkTime > 500) {
+                    try {
+                      onChunk(''); // 发送空内容作为心跳
+                    } catch (callbackError) {
+                      console.error('❌ 心跳回调执行失败:', callbackError);
+                    }
+                    lastChunkTime = now;
+                  }
+                }
+              } catch (chunkError) {
+                // 单个块处理错误，记录但继续
+                console.error('❌ 处理流块时出错:', chunkError);
+                continue;
+              }
+            }
+
+            if (!hasContent) {
+              throw new Error('AI没有返回任何内容');
+            }
+
+            // 成功完成，直接返回
             if (debugLoggingEnabled) {
-              console.warn('⚠️ 流式响应块缺少choices字段，跳过此块');
+              console.log(`✅ 流式生成成功 (模型: ${currentModel})`);
             }
-            continue;
-          }
+            return;
 
-          const content = chunk.choices[0]?.delta?.content || '';
-          if (content) {
-            hasContent = true;
-            lastChunkTime = Date.now();
-            onChunk(content);
-          } else {
-            // 心跳机制：如果超过500ms没有内容，发送一个空的心跳
-            const now = Date.now();
-            if (now - lastChunkTime > 500) {
-              onChunk(''); // 发送空内容作为心跳
-              lastChunkTime = now;
+          } catch (streamError) {
+            // 流迭代错误，检查是否是控制器关闭错误
+            if (streamError instanceof Error && streamError.message.includes('Controller is already closed')) {
+              console.warn('⚠️ 流控制器已关闭，可能是客户端断开连接');
+              throw streamError;
             }
+            throw streamError;
           }
-        }
-
-          if (!hasContent) {
-            throw new Error('AI没有返回任何内容');
-          }
-
-          if (debugLoggingEnabled) {
-            console.log(`✅ 流式生成成功 (模型: ${currentModel})`);
-          }
-          return;
 
         } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error));
 
           if (debugLoggingEnabled) {
             console.warn(`⚠️ 模型 ${currentModel} 流式生成尝试 ${attempt + 1} 失败:`, lastError.message);
+          }
+
+          // 如果是控制器关闭错误，不进行重试，直接抛出
+          if (lastError.message.includes('Controller is already closed')) {
+            throw lastError;
           }
 
           // 如果不是最后一次尝试，等待后重试
