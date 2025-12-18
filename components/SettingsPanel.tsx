@@ -11,13 +11,21 @@ interface SettingsPanelProps {
   onToggleImprovement: () => void
   aiModel: string
   onChangeModel: (model: string) => void
+  enableScraping: boolean
+  onToggleScraping: (value: boolean) => void
+  xhsCookie: string
+  onChangeCookie: (cookie: string) => void
 }
 
 export default function SettingsPanel({
   enableImprovement,
   onToggleImprovement,
   aiModel,
-  onChangeModel
+  onChangeModel,
+  enableScraping,
+  onToggleScraping,
+  xhsCookie,
+  onChangeCookie
 }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -79,6 +87,82 @@ export default function SettingsPanel({
                       <span>启用后将生成改进版本</span>
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* 小红书抓取设置 */}
+              <div className="space-y-4 mb-6">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200/30">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                        <span className="text-lg">🌐</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-green-800 text-sm">数据抓取</h4>
+                        <p className="text-green-600 text-xs">小红书热门数据</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => onToggleScraping(true)}
+                        className={`px-3 py-1 rounded-lg text-xs transition-colors ${
+                          enableScraping
+                            ? 'bg-green-100 text-green-700 border border-green-200'
+                            : 'bg-gray-50 text-gray-500 hover:bg-gray-100 border border-transparent'
+                        }`}
+                      >
+                        启用
+                      </button>
+                      <button
+                        onClick={() => onToggleScraping(false)}
+                        className={`px-3 py-1 rounded-lg text-xs transition-colors ${
+                          !enableScraping
+                            ? 'bg-orange-100 text-orange-700 border border-orange-200'
+                            : 'bg-gray-50 text-gray-500 hover:bg-gray-100 border border-transparent'
+                        }`}
+                      >
+                        禁用
+                      </button>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-green-100/50 rounded-lg">
+                    <p className="text-xs text-green-700">
+                      {enableScraping
+                        ? '✅ 正在获取真实热门数据，生成内容更精准'
+                        : '❌ 仅使用AI知识创作，响应速度更快'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 小红书Cookie设置 */}
+              <div className="space-y-4 mb-6">
+                <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-4 border border-orange-200/30">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                      <span className="text-lg">🍪</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-orange-800 text-sm">小红书 Cookie</h4>
+                      <p className="text-orange-600 text-xs">数据抓取认证</p>
+                    </div>
+                  </div>
+                  <Input
+                    value={xhsCookie}
+                    onChange={(e) => onChangeCookie(e.target.value)}
+                    placeholder="请输入小红书Cookie..."
+                    className="border-orange-200 focus:border-orange-400 text-sm h-10 font-mono text-xs"
+                    type="password"
+                  />
+                  <p className="text-xs text-orange-500 mt-2">
+                    从浏览器开发者工具中获取，用于小红书数据抓取认证
+                  </p>
+                  <div className="mt-2 p-2 bg-orange-100/50 rounded-lg">
+                    <p className="text-xs text-orange-700">
+                      {xhsCookie ? '✅ Cookie已配置' : '⚠️ 未配置Cookie，数据抓取将失败'}
+                    </p>
+                  </div>
                 </div>
               </div>
 

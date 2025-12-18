@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     task.type = taskType; // 设置任务类型
 
     // 在后台处理批量生成
-    processBatchGeneration(task.id, items, enableImprovement, aiModel, enableScraping).catch(error => {
+    processBatchGeneration(task.id, items, enableImprovement, aiModel, enableScraping, body.xhsCookie).catch(error => {
       console.error('批量生成失败:', error);
     });
 
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 }
 
 // 后台处理批量生成
-async function processBatchGeneration(taskId: string, items: any[], enableImprovement: boolean, aiModel?: string, enableScraping?: boolean) {
+async function processBatchGeneration(taskId: string, items: any[], enableImprovement: boolean, aiModel?: string, enableScraping?: boolean, xhsCookie?: string) {
   const task = generationManager.getTask(taskId);
   if (!task) return;
 
@@ -60,7 +60,7 @@ async function processBatchGeneration(taskId: string, items: any[], enableImprov
       generationManager.addRecordToTask(taskId, record);
 
       // 生成内容
-      const content = await generateSingleContent(item.keyword, item.userInfo, aiModel, enableScraping);
+      const content = await generateSingleContent(item.keyword, item.userInfo, aiModel, enableScraping, xhsCookie);
 
       if (content) {
         generationManager.updateRecord(record.id, content, 'completed');
@@ -99,12 +99,12 @@ async function processBatchGeneration(taskId: string, items: any[], enableImprov
 }
 
 // 生成单个内容
-async function generateSingleContent(keyword: string, userInfo: string, aiModel?: string, enableScraping?: boolean): Promise<any> {
+async function generateSingleContent(keyword: string, userInfo: string, aiModel?: string, enableScraping?: boolean, xhsCookie?: string): Promise<any> {
   try {
     // 获取热门数据
     let scrapedContent = null;
     if (enableScraping !== false) { // 默认启用爬取
-      scrapedContent = await fetchHotPostsWithCache(keyword);
+      scrapedContent = await fetchHotPostsWithCache(keyword, enableScraping, xhsCookie);
     }
 
     // 创建提示词

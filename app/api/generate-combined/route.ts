@@ -13,13 +13,14 @@ import { BusinessError } from '@/lib/error-handler';
 const debugLoggingEnabled = process.env.ENABLE_DEBUG_LOGGING === 'true';
 
 // 智能数据获取函数 - 优先使用缓存，失败时降级到备用缓存
-export async function fetchHotPostsWithCache(keyword: string): Promise<string | null> {
-  const scrapingEnabled = process.env.ENABLE_SCRAPING !== 'false';
+export async function fetchHotPostsWithCache(keyword: string, scrapingEnabled?: boolean, xhsCookie?: string): Promise<string | null> {
+  // 使用传递的参数，如果未传递则使用环境变量默认值
+  const isScrapingEnabled = scrapingEnabled !== undefined ? scrapingEnabled : process.env.ENABLE_SCRAPING !== 'false';
 
   // 如果爬取功能被禁用，直接返回 null，不使用任何缓存
-  if (!scrapingEnabled) {
+  if (!isScrapingEnabled) {
     if (debugLoggingEnabled) {
-      console.log(`⏭️ 爬取功能已禁用（ENABLE_SCRAPING=false），跳过所有数据获取`);
+      console.log(`⏭️ 爬取功能已禁用，跳过所有数据获取`);
     }
     return null;
   }
@@ -40,7 +41,7 @@ export async function fetchHotPostsWithCache(keyword: string): Promise<string | 
 
   // 2. 尝试爬取新数据
   try {
-    const scrapedData = await scrapeHotPosts(keyword);
+    const scrapedData = await scrapeHotPosts(keyword, xhsCookie);
     if (debugLoggingEnabled) {
       console.log(`✅ 爬取成功: ${keyword}`);
     }
@@ -68,13 +69,14 @@ export async function fetchHotPostsWithCache(keyword: string): Promise<string | 
 }
 
 // 实际的爬取函数
-async function scrapeHotPosts(keyword: string): Promise<string> {
-  const cookie = getEnvVar('XHS_COOKIE');
+async function scrapeHotPosts(keyword: string, providedCookie?: string): Promise<string> {
+  // 优先使用前端提供的Cookie，如果没有则使用环境变量
+  const cookie = providedCookie || getEnvVar('XHS_COOKIE');
   if (!cookie) {
     throw new BusinessError(
       ERROR_MESSAGES.XHS_COOKIE_NOT_CONFIGURED,
       '小红书数据获取配置错误',
-      '请检查环境变量配置',
+      '请在设置中配置小红书Cookie或检查环境变量',
       false
     );
   }
@@ -353,10 +355,18 @@ export async function POST(request: Request) {
       });
     }
 
-    const { keyword, user_info } = requestBody;
+    const { keyword, user_info, enableScraping, xhsCookie } = requestBody;
 
     if (!user_info || !keyword) {
       return new Response(ERROR_MESSAGES.MISSING_REQUIRED_PARAMS, { status: HTTP_STATUS.BAD_REQUEST });
+    }
+
+    // 使用前端传递的 enableScraping 参数，如果未传递则使用环境变量默认值
+    const scrapingEnabled = enableScraping !== undefined ? enableScraping : process.env.ENABLE_SCRAPING !== 'false';
+
+    if (debugLoggingEnabled) {
+      console.log(`🔍 前端设置 - 数据抓取: ${scrapingEnabled ? '启用' : '禁用'}`);
+      console.log(`🔍 前端设置 - Cookie: ${xhsCookie ? '已提供' : '未提供'}`);
     }
 
     // 添加调试日志，验证数据传递
@@ -367,8 +377,8 @@ export async function POST(request: Request) {
       console.log('📝 user_info 前100字符:', user_info?.substring(0, 100) || '空');
     }
 
-    // 第一步：获取热门笔记数据（如果爬取功能启用）
-    const scrapedContent = await fetchHotPostsWithCache(keyword);
+    // 第一步：获取热门笔记数据（使用前端传递的设置）
+    const scrapedContent = await fetchHotPostsWithCache(keyword, scrapingEnabled, xhsCookie);
 
     // 第二步：根据是否有参考数据，创建不同的提示词
     const combinedPrompt = scrapedContent

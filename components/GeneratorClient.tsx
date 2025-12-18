@@ -180,6 +180,9 @@ export default function GeneratorClient({
     setIsGenerating(true);
 
     try {
+      // 从localStorage获取Cookie
+      const savedCookie = typeof window !== 'undefined' ? localStorage.getItem('xhsCookie') : null;
+
       const requestBody = {
         items: [{
           id: Date.now().toString(),
@@ -188,7 +191,8 @@ export default function GeneratorClient({
         }],
         enableImprovement,
         aiModel,
-        enableScraping
+        enableScraping,
+        xhsCookie: savedCookie || ''
       };
 
       const response = await fetch('/api/batch-generate', {

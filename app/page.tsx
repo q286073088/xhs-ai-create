@@ -5,16 +5,15 @@ import BatchGenerator from '@/components/BatchGenerator'
 import SettingsPanel from '@/components/SettingsPanel'
 import { ToastContainer, useToast } from '@/components/Toast'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { useState, useEffect } from 'react'
-import { CheckCircle, Settings, Globe } from 'lucide-react'
+import { CheckCircle, Settings } from 'lucide-react'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single')
   const [enableImprovement, setEnableImprovement] = useState(true)
   const [aiModel, setAiModel] = useState('gemini-2.5-pro,gemini-2.5-flash')
   const [enableScraping, setEnableScraping] = useState(true)
-  const [showScrapingMenu, setShowScrapingMenu] = useState(false)
+  const [xhsCookie, setXhsCookie] = useState('')
   const { toasts, addToast, removeToast, info } = useToast()
 
   // 从localStorage加载设置
@@ -22,6 +21,7 @@ export default function Home() {
     const savedImprovement = localStorage.getItem('enableImprovement')
     const savedModel = localStorage.getItem('aiModel')
     const savedScraping = localStorage.getItem('enableScraping')
+    const savedCookie = localStorage.getItem('xhsCookie')
 
     if (savedImprovement !== null) {
       setEnableImprovement(JSON.parse(savedImprovement))
@@ -31,6 +31,9 @@ export default function Home() {
     }
     if (savedScraping !== null) {
       setEnableScraping(JSON.parse(savedScraping))
+    }
+    if (savedCookie) {
+      setXhsCookie(savedCookie)
     }
   }, [])
 
@@ -49,87 +52,36 @@ export default function Home() {
   const toggleScraping = (value: boolean) => {
     setEnableScraping(value)
     localStorage.setItem('enableScraping', JSON.stringify(value))
-    setShowScrapingMenu(false)
     info(value ? '已启用数据抓取功能' : '已禁用数据抓取功能')
   }
 
+  const changeCookie = (newCookie: string) => {
+    setXhsCookie(newCookie)
+    if (newCookie) {
+      localStorage.setItem('xhsCookie', newCookie)
+      info('Cookie已更新')
+    } else {
+      localStorage.removeItem('xhsCookie')
+      info('Cookie已清除')
+    }
+  }
+
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 relative overflow-hidden"
-      onClick={() => {
-        setShowScrapingMenu(false)
-      }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 relative overflow-hidden">
       {/* 左上角设置面板 */}
       <SettingsPanel
         enableImprovement={enableImprovement}
         onToggleImprovement={toggleImprovement}
         aiModel={aiModel}
         onChangeModel={changeModel}
+        enableScraping={enableScraping}
+        onToggleScraping={toggleScraping}
+        xhsCookie={xhsCookie}
+        onChangeCookie={changeCookie}
       />
 
-      {/* 右上角按钮组 */}
-      <div className="fixed top-4 right-4 z-50 flex gap-2" onClick={(e) => e.stopPropagation()}>
-        {/* 数据抓取配置 */}
-        <div className="relative">
-          <Button
-            onClick={() => setShowScrapingMenu(!showScrapingMenu)}
-            className="bg-white/90 backdrop-blur-sm border border-purple-200/50 rounded-lg hover:bg-purple-50 transition-all duration-300 shadow-lg hover:shadow-xl p-3"
-            size="sm"
-          >
-            <Globe className="w-5 h-5 text-purple-700" />
-          </Button>
-
-          {showScrapingMenu && (
-            <div
-              className="absolute top-16 right-0 w-64 bg-white/95 backdrop-blur-lg border border-purple-200/50 rounded-xl shadow-2xl z-50"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-600 rounded-lg flex items-center justify-center">
-                    <Globe className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-800 text-sm">数据抓取</h4>
-                    <p className="text-gray-600 text-xs">小红书数据获取</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => toggleScraping(true)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      enableScraping
-                        ? 'bg-green-100 text-green-700 border border-green-200'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-transparent'
-                    }`}
-                  >
-                    ✅ 启用抓取
-                  </button>
-                  <button
-                    onClick={() => toggleScraping(false)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      !enableScraping
-                        ? 'bg-orange-100 text-orange-700 border border-orange-200'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-transparent'
-                    }`}
-                  >
-                    ❌ 禁用抓取
-                  </button>
-                </div>
-                <div className="mt-3 p-2 bg-blue-50 rounded-lg">
-                  <p className="text-xs text-blue-600">
-                    {enableScraping
-                      ? '正在获取真实热门数据'
-                      : '仅使用AI知识创作'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 历史记录按钮 */}
+      {/* 右上角历史记录按钮 */}
+      <div className="fixed top-4 right-4 z-50">
         <a
           href="/history"
           className="inline-flex items-center px-4 py-2 bg-white/90 backdrop-blur-sm border border-purple-200/50 rounded-lg hover:bg-purple-50 transition-all duration-300 shadow-lg hover:shadow-xl"

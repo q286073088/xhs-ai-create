@@ -32,8 +32,6 @@ export default function BatchGenerator({
     { id: '1', keyword: '', userInfo: '' }
   ])
   const [isGenerating, setIsGenerating] = useState(false)
-  const [taskId, setTaskId] = useState<string | null>(null)
-  const [progress, setProgress] = useState(0)
 
   const addItem = () => {
     const newItem: BatchItem = {
@@ -83,7 +81,6 @@ export default function BatchGenerator({
     }
 
     setIsGenerating(true)
-    setProgress(0)
 
     try {
       const request: BatchGenerationRequest = {
@@ -105,9 +102,15 @@ export default function BatchGenerator({
 
       const data = await response.json()
       if (data.success) {
-        setTaskId(data.taskId)
         onShowToast?.(`批量任务已提交，共${validItems.length}个项目，可在历史记录中查看状态`)
-        monitorProgress(data.taskId)
+
+        // 重置状态
+        setIsGenerating(false)
+
+        // 延迟跳转到历史记录
+        setTimeout(() => {
+          window.location.href = '/history'
+        }, 1000)
       } else {
         alert('批量生成失败: ' + data.error)
         setIsGenerating(false)
@@ -117,38 +120,6 @@ export default function BatchGenerator({
       alert('批量生成失败')
       setIsGenerating(false)
     }
-  }
-
-  const monitorProgress = async (taskId: string) => {
-    const checkProgress = async () => {
-      try {
-        const response = await fetch(`/api/generation-status?taskId=${taskId}`)
-        const data = await response.json()
-
-        if (data.success && data.task) {
-          setProgress(data.task.progress)
-
-          if (data.task.status === 'completed') {
-            setIsGenerating(false)
-            onShowToast?.(`批量生成完成！共生成 ${data.task.records.length} 条记录`)
-            // 延迟跳转到历史记录
-            setTimeout(() => {
-              window.location.href = '/history'
-            }, 1000)
-          } else if (data.task.status === 'failed') {
-            setIsGenerating(false)
-            onShowToast?.('批量生成失败，请查看历史记录了解详情')
-          } else {
-            setTimeout(checkProgress, 2000)
-          }
-        }
-      } catch (error) {
-        console.error('检查进度失败:', error)
-        setTimeout(checkProgress, 2000)
-      }
-    }
-
-    checkProgress()
   }
 
   return (
@@ -244,41 +215,6 @@ export default function BatchGenerator({
           ))}
         </div>
       </div>
-
-      {/* 进度显示 */}
-      {isGenerating && taskId && (
-        <Card className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200/50">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Zap className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-blue-800">批量生成进行中</h3>
-                  <p className="text-blue-600 text-sm">AI正在后台处理您的任务</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-blue-800">{progress}%</div>
-                <div className="text-xs text-blue-600">完成进度</div>
-              </div>
-            </div>
-
-            <div className="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-
-            <div className="mt-3 flex items-center justify-center gap-2 text-sm text-blue-600">
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>正在处理，请稍候...</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* 操作按钮 */}
       <div className="mt-8 flex gap-4">

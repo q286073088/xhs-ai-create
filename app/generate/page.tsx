@@ -306,7 +306,20 @@ function GeneratePageContent() {
         const requestBody = {
           user_info: userInfo.trim(),
           keyword: keyword.trim(),
+          enableScraping: false, // 从localStorage获取设置
+          xhsCookie: '', // 从localStorage获取Cookie
         };
+
+        // 从localStorage获取设置
+        const savedScraping = localStorage.getItem('enableScraping');
+        const savedCookie = localStorage.getItem('xhsCookie');
+
+        if (savedScraping !== null) {
+          requestBody.enableScraping = JSON.parse(savedScraping);
+        }
+        if (savedCookie) {
+          requestBody.xhsCookie = savedCookie;
+        }
 
         console.log('📤 发送请求体:', JSON.stringify(requestBody, null, 2));
 
