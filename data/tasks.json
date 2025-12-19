@@ -1,34 +1,5 @@
 [
   {
-    "id": "1766046524141_77dtzd13l",
-    "type": "single",
-    "status": "processing",
-    "progress": 0,
-    "totalItems": 1,
-    "completedItems": 0,
-    "createdAt": "2025-12-18T08:28:44.141Z",
-    "records": [
-      {
-        "id": "1766046524143_yqibdin6a",
-        "keyword": "AI企业落地经验",
-        "userInfo": "实证大于空谈，人心大于技术： 强调了AI落地必须以解决实际问题、创造实际价值为导向，而非为了技术而技术。同时，关注人的接受度、使用习惯和组织文化是成功的关键。",
-        "generatedContent": {
-          "titles": "",
-          "body": "",
-          "tags": [],
-          "imagePrompt": "",
-          "selfComment": "",
-          "strategy": "",
-          "playbook": ""
-        },
-        "status": "generating",
-        "createdAt": "2025-12-18T08:28:44.143Z",
-        "improvementCount": 0,
-        "isImproved": false
-      }
-    ]
-  },
-  {
     "id": "1766046553665_g2wsdlkaj",
     "type": "batch",
     "status": "completed",
@@ -222,55 +193,5 @@
       }
     ],
     "completedAt": "2025-12-18T08:35:26.546Z"
-  },
-  {
-    "id": "1766047304018_9iqm1tcup",
-    "type": "single",
-    "status": "completed",
-    "progress": 100,
-    "totalItems": 1,
-    "completedItems": 1,
-    "createdAt": "2025-12-18T08:41:44.018Z",
-    "records": [
-      {
-        "id": "1766047304019_rr7ik0jcg",
-        "keyword": "AI企业落地",
-        "userInfo": "从小处改起，从容易处着手： 建议从POC（概念验证）或小范围试点开始，快速迭代，降低风险，积累经验，逐步推广。",
-        "generatedContent": {
-          "titles": "",
-          "body": "",
-          "tags": [],
-          "imagePrompt": "",
-          "selfComment": "",
-          "strategy": "",
-          "playbook": ""
-        },
-        "status": "generating",
-        "createdAt": "2025-12-18T08:41:44.019Z",
-        "improvementCount": 0,
-        "isImproved": false
-      },
-      {
-        "id": "1766047304237_qunkqvsq3",
-        "keyword": "AI企业落地",
-        "userInfo": "从小处改起，从容易处着手： 建议从POC（概念验证）或小范围试点开始，快速迭代，降低风险，积累经验，逐步推广。",
-        "generatedContent": {
-          "titles": "",
-          "body": "",
-          "tags": [],
-          "imagePrompt": "",
-          "selfComment": "",
-          "strategy": "",
-          "playbook": ""
-        },
-        "status": "failed",
-        "createdAt": "2025-12-18T08:41:44.237Z",
-        "improvementCount": 0,
-        "isImproved": false,
-        "errorMessage": "无法获取小红书数据: 无法获取数据且无可用缓存",
-        "completedAt": "2025-12-18T08:41:44.238Z"
-      }
-    ],
-    "completedAt": "2025-12-18T08:41:44.238Z"
   }
 ]
