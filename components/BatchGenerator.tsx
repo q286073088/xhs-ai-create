@@ -105,7 +105,7 @@ export default function BatchGenerator({
         enableImprovement,
         aiModel,
         enableScraping,
-        xhsCookie: savedCookie || ''
+        xhsCookie: savedCookie || undefined
       }
 
       const response = await fetch('/api/batch-generate', {

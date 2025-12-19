@@ -28,6 +28,7 @@ export interface BatchGenerationRequest {
   enableImprovement: boolean;
   aiModel?: string;
   enableScraping?: boolean;
+  xhsCookie?: string;
 }
 
 export interface GenerationTask {
