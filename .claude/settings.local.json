@@ -8,7 +8,8 @@
       "Bash(npm run lint)",
       "Bash(cat:*)",
       "Bash(curl -X POST http://localhost:3003/api/generate-combined -H \"Content-Type: application/json\" -d '{\"\"keyword\"\": \"\"测试\"\", \"\"user_info\"\": \"\"测试用户\"\"}' -v)",
-      "Bash(curl -X POST http://localhost:3002/api/generate-combined -H \"Content-Type: application/json\" -d \"{\"\"keyword\"\": \"\"测试\"\", \"\"user_info\"\": \"\"测试用户\"\"}\" -v)"
+      "Bash(curl -X POST http://localhost:3002/api/generate-combined -H \"Content-Type: application/json\" -d \"{\"\"keyword\"\": \"\"测试\"\", \"\"user_info\"\": \"\"测试用户\"\"}\" -v)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: v2.2重大升级 - 动态设置与表单持久化功能\n\n✨ 新增功能：\n- 动态设置面板：左上角设置按钮，支持Cookie和抓取开关实时配置\n- 表单持久化：切换单次/批量生成时保留用户输入内容\n- 批量生成UI优化：统一紫蓝色主题，提升视觉体验\n- Cookie动态配置：支持前端动态输入小红书Cookie\n\n🔧 技术改进：\n- 新增ENABLE_SCRAPING环境变量控制数据抓取功能\n- API支持动态Cookie传递，提升灵活性\n- 表单数据localStorage持久化存储\n- 优化批量生成组件交互体验\n\n📝 文档更新：\n- README全面更新至v2.2版本说明\n- 新增动态设置和表单持久化使用指南\n- 完善项目结构和技术栈说明\n\n🎯 用户体验：\n- 无缝切换生成模式，内容不丢失\n- 实时配置功能，无需重启应用\n- 统一的视觉设计风格\n- 更好的错误处理和状态反馈\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ],
     "deny": [],
     "ask": []
