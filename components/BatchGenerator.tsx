@@ -226,9 +226,6 @@ export default function BatchGenerator({
                         {/* 关键词输入 */}
                         <div>
                           <label className="text-sm sm:text-base font-semibold text-gray-700 flex items-center gap-3 mb-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg hover:scale-105 transition-transform duration-300">
-                              🎯
-                            </div>
                             <span className="flex-1">文案主题</span>
                             <div className="text-xs text-purple-600 font-semibold bg-purple-50 px-3 py-1 rounded-full border border-purple-200">必填</div>
                           </label>
@@ -243,9 +240,6 @@ export default function BatchGenerator({
                         {/* 素材内容输入 */}
                         <div>
                           <label className="text-sm sm:text-base font-semibold text-gray-700 flex items-center gap-3 mb-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg hover:scale-105 transition-transform duration-300">
-                              📝
-                            </div>
                             <span className="flex-1">素材内容</span>
                             <div className="text-xs text-purple-600 font-semibold bg-purple-50 px-3 py-1 rounded-full border border-purple-200">必填</div>
                           </label>
@@ -292,13 +286,6 @@ export default function BatchGenerator({
                   className="px-12 py-4 text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-500 w-full sm:w-auto max-w-md group relative overflow-hidden bg-gradient-to-r from-purple-500 via-blue-600 to-indigo-600 hover:from-purple-400 hover:via-blue-500 hover:to-indigo-500 text-white border-0 rounded-2xl transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:transform-none"
                 >
                   <div className="flex items-center justify-center gap-3">
-                    <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                      {isGenerating ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      ) : (
-                        <span className="text-xl group-hover:scale-110 transition-transform duration-300">🚀</span>
-                      )}
-                    </div>
                     <span>{isGenerating ? '正在提交批量任务...' : `开始批量生成 (${items.length}个项目)`}</span>
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>

@@ -18,7 +18,7 @@ const UI_CONFIG = {
     keyword: '例如：护肤心得、美食探店、旅行攻略...',
     userInfo: '产品特点、使用感受、具体细节...越详细生成的文案越精准 ✨'
   },
-  buttonText: '🚀 开始生成爆款文案'
+  buttonText: '开始生成爆款文案'
 } as const;
 
 // UI Components
@@ -36,7 +36,6 @@ function BackgroundDecorations() {
 interface FormFieldProps {
   id: string;
   label: string;
-  icon: string;
   required?: boolean;
   type: 'input' | 'textarea';
   value: string;
@@ -44,15 +43,12 @@ interface FormFieldProps {
   placeholder: string;
 }
 
-function FormField({ id, label, icon, required = false, type, value, onChange, placeholder }: FormFieldProps) {
+function FormField({ id, label, required = false, type, value, onChange, placeholder }: FormFieldProps) {
   const baseClassName = "border-2 border-purple-200/80 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 text-base shadow-sm hover:shadow-md transition-all duration-300 rounded-xl bg-white/80 backdrop-blur-sm text-gray-700 placeholder:text-gray-400 font-medium";
 
   return (
     <div className="space-y-3">
       <label htmlFor={id} className="text-sm sm:text-base font-semibold text-gray-700 flex items-center gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg hover:scale-105 transition-transform duration-300">
-          {icon}
-        </div>
         <span className="flex-1">{label}</span>
         {required && (
           <div className="text-xs text-purple-600 font-semibold bg-purple-50 px-3 py-1 rounded-full border border-purple-200">必填</div>
@@ -257,19 +253,17 @@ export default function GeneratorClient({
                 <FormField
                   id="topic"
                   label="文案主题"
-                  icon="🎯"
                   required
                   type="input"
                   value={formData.keyword}
                   onChange={updateFormField('keyword')}
                   placeholder={UI_CONFIG.placeholders.keyword}
                 />
-                
+
                 <div className="xl:row-span-2">
                   <FormField
                     id="material"
                     label="素材内容"
-                    icon="📝"
                     required
                     type="textarea"
                     value={formData.userInfo}
@@ -288,13 +282,6 @@ export default function GeneratorClient({
                   className="px-12 py-4 text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-500 w-full sm:w-auto max-w-sm group relative overflow-hidden bg-gradient-to-r from-purple-500 via-blue-600 to-indigo-600 hover:from-purple-400 hover:via-blue-500 hover:to-indigo-500 text-white border-0 rounded-2xl transform hover:scale-105 active:scale-95"
                 >
                   <div className="flex items-center justify-center gap-3">
-                    <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                      {isGenerating ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      ) : (
-                        <span className="text-xl group-hover:scale-110 transition-transform duration-300">🚀</span>
-                      )}
-                    </div>
                     <span>{isGenerating ? '正在进入生成页面...' : UI_CONFIG.buttonText}</span>
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>

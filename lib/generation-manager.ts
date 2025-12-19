@@ -200,7 +200,29 @@ class GenerationManager {
 
   // 删除记录
   deleteRecord(id: string): boolean {
-    return this.records.delete(id);
+    const deleted = this.records.delete(id);
+    if (deleted) {
+      // 同时从所有任务中移除该记录
+      for (const task of this.tasks.values()) {
+        task.records = task.records.filter(record => record.id !== id);
+
+        // 如果任务的所有记录都被删除了，也删除任务
+        if (task.records.length === 0) {
+          this.tasks.delete(task.id);
+        }
+      }
+      this.saveToFile(); // 删除后保存到文件
+    }
+    return deleted;
+  }
+
+  // 删除任务
+  deleteTask(id: string): boolean {
+    const deleted = this.tasks.delete(id);
+    if (deleted) {
+      this.saveToFile(); // 删除后保存到文件
+    }
+    return deleted;
   }
 
   // 清理旧记录（保留最近的100条）
@@ -209,6 +231,7 @@ class GenerationManager {
     if (allRecords.length > 100) {
       const toDelete = allRecords.slice(100);
       toDelete.forEach(record => this.records.delete(record.id));
+      this.saveToFile(); // 清理后保存到文件
     }
   }
 }
